@@ -331,6 +331,8 @@ function render(){
   const bdayDate=getBdayDate(S.year),bdayMonth=isBdayMonth(S.year);
   const vacTypes=['연차','여름휴가','생일휴가','경조사'];
   const isEditing=!!form._editId;
+  const jdP=S.joinDate?S.joinDate.split('-'):['','',''];
+  const bdP=S.birthday?S.birthday.split('-'):['','',''];
 
   root.innerHTML=`
 <div class="hd">
@@ -443,6 +445,17 @@ ${ui.showForm?`
     if(si)si.addEventListener('change',e=>{form.startTime=e.target.value;updTP();});
     if(ei)ei.addEventListener('change',e=>{form.endTime=e.target.value;updTP();});
   }
+  // 날짜 자동 포커스 이동
+  if(ui.showSettings){
+    const attach=(yId,mId,dId)=>{
+      const y=document.getElementById(yId),m=document.getElementById(mId),d=document.getElementById(dId);
+      if(y)y.addEventListener('input',function(){this.value=this.value.replace(/\D/g,'');if(this.value.length===4)m?.focus();});
+      if(m)m.addEventListener('input',function(){this.value=this.value.replace(/\D/g,'');if(this.value.length===2)d?.focus();});
+      if(d)d.addEventListener('input',function(){this.value=this.value.replace(/\D/g,'');});
+    };
+    attach('jd_y','jd_m','jd_d');
+    attach('bd_y','bd_m','bd_d');
+  }
   // 엑셀 가져오기 이벤트 직접 연결 (클로저로 스코프 문제 해결)
   const xlsxInp=document.getElementById('xlsx_inp');
   if(xlsxInp){
@@ -501,8 +514,15 @@ function updTP(){const tp=document.getElementById('tp');if(!tp)return;const raw=
 function adjYear(d){S.year+=d;render();}
 function toggleSettings(){ui.showSettings=!ui.showSettings;render();}
 function saveSettingsForm(){
-  const j=document.getElementById('jd_i'),b=document.getElementById('bd_i');
-  if(j)S.joinDate=j.value;if(b)S.birthday=b.value;
+  const getDate=(y,m,d)=>{
+    const yv=document.getElementById(y)?.value.trim();
+    const mv=document.getElementById(m)?.value.trim();
+    const dv=document.getElementById(d)?.value.trim();
+    if(yv&&mv&&dv)return`${yv}-${mv.padStart(2,'0')}-${dv.padStart(2,'0')}`;
+    return'';
+  };
+  S.joinDate=getDate('jd_y','jd_m','jd_d');
+  S.birthday=getDate('bd_y','bd_m','bd_d');
   saveS();ui.showSettings=false;render();
 }
 function openForm(){
