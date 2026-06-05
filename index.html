@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3b82f6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="휴가관리">
+<title>🏖️ 휴가 관리</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--border:#e5e7eb;--blue:#3b82f6;--blue-l:#eff6ff;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--pink:#ec4899;--pink-l:#fdf2f8;--text:#111827;--t2:#6b7280;--t3:#9ca3af;--r:13px;--rs:8px;--sh:0 1px 3px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.05)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:800px;margin:0 auto;padding:20px 16px 40px}
+.ibanner{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px}
+.ibanner b{display:block;font-size:14px;margin-bottom:2px}
+.ibanner .sub{font-size:11px;opacity:.85;margin-top:2px}
+.iclose{border:none;background:rgba(255,255,255,.2);color:#fff;border-radius:99px;width:28px;height:28px;cursor:pointer;font-size:16px;flex-shrink:0}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.hd-t{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.hd-s{font-size:12px;color:var(--t2);margin-top:3px}
+.hd-r{display:flex;align-items:center;gap:6px}
+.ynav{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;box-shadow:var(--sh)}
+.ynav button{border:none;background:none;padding:8px 13px;cursor:pointer;font-size:18px;color:var(--t2);line-height:1}
+.ynav button:hover{background:#f9fafb}
+.ynav span{font-size:15px;font-weight:700;padding:0 2px}
+.icon-btn{width:36px;height:36px;border:none;background:var(--card);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh);font-size:16px;color:var(--t2)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+.c-lbl{font-size:11px;color:var(--t2);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px}
+.c-val{font-size:26px;font-weight:800;line-height:1}
+.c-val span{font-size:13px;font-weight:400}
+.c-sub{font-size:11px;color:var(--t2);margin-top:4px}
+.infobox{background:var(--blue-l);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.ir{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:13px}
+.ir .l{color:var(--t2)}.ir .v{font-weight:600}
+.idiv{border-top:1px solid #bfdbfe;margin:7px 0}
+.prog-card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:14px}
+.pt{font-size:14px;font-weight:700;margin-bottom:14px}
+.pi{margin-bottom:13px}.pi:last-child{margin-bottom:0}
+.pr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.pl{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px}
+.pn{font-size:12px;color:var(--t2)}
+.pbar{height:7px;background:#f3f4f6;border-radius:99px;overflow:hidden}
+.pfill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.prem{font-size:11px;color:var(--t2);margin-top:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.ba{background:#dbeafe;color:#1d4ed8}.bs{background:#fef3c7;color:#92400e}.bsp{background:#f3e8ff;color:#6b21a8}.bb{background:#fce7f3;color:#9d174d}
+.comp-card{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:var(--r);padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.comp-l .ct{font-size:13px;font-weight:700;color:#78350f;margin-bottom:2px}.comp-l .cs{font-size:11px;color:#92400e}
+.comp-v{font-size:22px;font-weight:800;color:#92400e}
+.log-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.log-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.log-ht{font-size:14px;font-weight:700}
+.btn-add{background:var(--blue);color:#fff;border:none;border-radius:var(--rs);padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-add:hover{background:#2563eb}
+.empty{text-align:center;padding:36px 20px;color:var(--t2)}
+.empty .ei{font-size:36px;margin-bottom:8px}
+.empty .em{font-size:14px;font-weight:500;margin-bottom:4px;color:var(--text)}
+.empty .es{font-size:12px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:9px 14px;font-size:11px;color:var(--t3);font-weight:600;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--border);background:#fafafa}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafafa}
+.ld{font-size:13px;font-weight:600}
+.lc{font-size:12px;color:var(--t2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-btns{display:flex;align-items:center;gap:2px;white-space:nowrap}
+.edit-btn{border:none;background:none;color:var(--t3);cursor:pointer;padding:4px 6px;border-radius:4px;font-size:13px}
+.edit-btn:hover{color:var(--blue);background:var(--blue-l)}
+.del-btn{border:none;background:none;color:var(--t3);cursor:pointer;padding:4px 6px;border-radius:4px;font-size:13px}
+.del-btn:hover{color:var(--red);background:#fef2f2}
+.notice{background:#fffbeb;border-left:3px solid var(--orange);border-radius:0 var(--rs) var(--rs) 0;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:14px}
+.bday-banner{background:linear-gradient(135deg,var(--pink-l),#fdf4ff);border:1px solid #fbcfe8;border-radius:var(--r);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.bday-l{display:flex;align-items:center;gap:10px}
+.bday-icon{font-size:28px}
+.bday-title{font-weight:700;color:#9d174d;font-size:13px;margin-bottom:1px}
+.bday-sub{font-size:11px;color:var(--pink)}
+.bday-chip{background:var(--pink-l);border:1px solid #fbcfe8;border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;color:#9d174d;white-space:nowrap}
+.setup-card{background:var(--card);border-radius:var(--r);padding:44px 24px;text-align:center;box-shadow:var(--sh);margin-bottom:14px}
+.si{font-size:52px;margin-bottom:14px}.st{font-size:18px;font-weight:800;margin-bottom:8px}.sd{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:999;padding:0}
+@media(min-width:500px){.ovl{align-items:center;padding:16px}}
+.modal{background:var(--card);border-radius:18px 18px 0 0;width:100%;max-width:460px;max-height:92vh;overflow-y:auto}
+@media(min-width:500px){.modal{border-radius:18px}}
+.mhd{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0}
+.mht{font-size:17px;font-weight:800}
+.close-btn{border:none;background:#f3f4f6;border-radius:99px;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--t2)}
+.mbody{padding:20px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--t2);margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase}
+.fc{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;color:var(--text);background:var(--card);outline:none;-webkit-appearance:none;appearance:none;font-family:inherit}
+.fc:focus{border-color:var(--blue)}
+textarea.fc{resize:vertical;min-height:60px}
+/* 날짜 분리 입력 */
+.date-row{display:flex;align-items:center;gap:6px}
+.date-row .fc{text-align:center;padding:10px 6px}
+.date-sep{color:var(--t2);font-size:18px;font-weight:300;flex-shrink:0}
+.rgrp{display:flex;gap:6px;flex-wrap:wrap}
+.ropt{flex:1;min-width:80px;padding:9px 8px;border:1.5px solid var(--border);border-radius:var(--rs);text-align:center;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;user-select:none}
+.ropt.on{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+.ropt:hover:not(.on){background:#f9fafb}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tprev{font-size:12px;color:var(--blue);padding:5px 0;font-weight:500;min-height:22px}
+.tprev.warn{color:var(--red)}
+.fact{display:flex;gap:8px;margin-top:16px;padding-bottom:env(safe-area-inset-bottom)}
+.btn-cancel{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--card);font-size:14px;font-weight:600;cursor:pointer;color:var(--t2)}
+.btn-submit{flex:2;padding:11px;border:none;border-radius:var(--rs);background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.btn-submit:hover{background:#2563eb}
+.snote{font-size:12px;color:var(--t2);margin-top:6px;line-height:1.6}
+.over-warn{font-size:11px;color:var(--red);font-weight:500}
+.data-btn{width:100%;padding:11px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;text-align:left;margin-bottom:6px}
+.import-status{padding:10px 12px;border-radius:var(--rs);font-size:13px;font-weight:600;margin-bottom:6px}
+@media(max-width:500px){.cards{grid-template-columns:repeat(2,1fr)}.frow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="ibanner" style="display:none" class="ibanner">
+  <div><b>📲 홈 화면에 추가하면 앱처럼 사용할 수 있어요!</b><div class="sub" id="isub"></div></div>
+  <button class="iclose" onclick="document.getElementById('ibanner').style.display='none'">✕</button>
+</div>
+<div class="wrap" id="root"></div>
+
+<script>
+// ── PWA ──────────────────────────────────────────────
+(function(){
+  const m={name:'🏖️ 휴가 관리',short_name:'휴가관리',start_url:'./index.html',display:'standalone',background_color:'#f4f5f7',theme_color:'#3b82f6',icons:[{src:`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%233b82f6'/><text y='78' x='12' font-size='72'>🏖️</text></svg>`,sizes:'512x512',type:'image/svg+xml'}]};
+  try{const b=new Blob([JSON.stringify(m)],{type:'application/json'});const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);document.head.appendChild(l);}catch(e){}
+  if(!window.matchMedia('(display-mode:standalone)').matches&&!window.navigator.standalone){
+    const b=document.getElementById('ibanner'),s=document.getElementById('isub');
+    if(/iPhone|iPad/.test(navigator.userAgent))s.textContent='Safari → 공유버튼 → 홈 화면에 추가';
+    else if(/Android/.test(navigator.userAgent))s.textContent='Chrome → ⋮ → 홈 화면에 추가';
+    else s.textContent='주소창 옆 설치 아이콘 클릭';
+    if(b)b.style.display='flex';
+  }
+})();
+
+// ── 상태 ──────────────────────────────────────────────
+const WH=8;
+let S={joinDate:'',birthday:'',year:new Date().getFullYear()};
+let entries=[];
+let ui={showForm:false,showSettings:false,importStatus:{loading:false,msg:'',error:false}};
+let form={};
+
+// ── 저장 ──────────────────────────────────────────────
+function saveS(){try{localStorage.setItem('hvac_s',JSON.stringify(S));}catch(e){}}
+function saveE(){try{localStorage.setItem('hvac_e',JSON.stringify(entries));}catch(e){}}
+function load(){
+  try{const r=localStorage.getItem('hvac_s');if(r)Object.assign(S,JSON.parse(r));}catch(e){}
+  try{const r=localStorage.getItem('hvac_e');if(r)entries=JSON.parse(r);}catch(e){}
+  render();
+}
+
+// ── 계산 ──────────────────────────────────────────────
+function nyuncha(yr){
+  if(!S.joinDate)return 1;
+  const j=new Date(S.joinDate),jan1=new Date(yr,0,1);
+  let y=yr-j.getFullYear();
+  if(new Date(yr,j.getMonth(),j.getDate())>jan1)y--;
+  return Math.max(1,y+1);
+}
+function lsBonus(nc){return nc<=3?nc:3+Math.ceil((nc-3)/2);}
+function vacInfo(yr){const nc=nyuncha(yr),ls=lsBonus(nc),annual=12+ls;return{nc,ls,annual,summer:3,birthday:S.birthday?1:0,total:annual+3+(S.birthday?1:0)};}
+function getBdayDate(yr){if(!S.birthday)return null;const[,mm,dd]=S.birthday.split('-');return`${yr}-${mm}-${dd}`;}
+function isBdayMonth(yr){if(!S.birthday)return false;const today=new Date(),m=parseInt(S.birthday.split('-')[1])-1;return today.getFullYear()===yr&&today.getMonth()===m;}
+function yearEntries(){return entries.filter(e=>new Date(e.date).getFullYear()===S.year);}
+function isCounted(e){if(!e.status||e.status==='완료')return true;const t=new Date();t.setHours(0,0,0,0);return new Date(e.date)<=t;}
+function isPending(e){return e.status==='예정'&&!isCounted(e);}
+function usedHours(){
+  let a=0,s=0,b=0;
+  yearEntries().forEach(e=>{
+    if(!isCounted(e))return;
+    if(e.type==='연차')a+=e.hours;else if(e.type==='여름휴가')s+=e.hours;else if(e.type==='생일휴가')b+=e.hours;
+  });
+  return{aH:a,sH:s,bH:b,aD:a/WH,sD:s/WH,bD:b/WH};
+}
+
+// ── 헬퍼 ──────────────────────────────────────────────
+function h2s(h){
+  if(!h||h<=0)return'0시간';
+  const d=Math.floor(h/WH),rh=h%WH,rm=Math.round((rh*60)%60);
+  let s='';if(d)s+=d+'일';if(Math.floor(rh))s+=(s?' ':'')+Math.floor(rh)+'시간';if(rm)s+=(s?' ':'')+rm+'분';
+  return s||'0시간';
+}
+function dFmt(n){if(n<=0)return'0일';return(n%1===0)?n+'일':n.toFixed(1)+'일';}
+function dateFmt(ds){const d=new Date(ds);return`${d.getMonth()+1}/${d.getDate()}(${['일','월','화','수','목','금','토'][d.getDay()]})`;}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function timeOpts(){const o=[];for(let h=10;h<=19;h++)for(let m=0;m<60;m+=30){if(h===19&&m>0)break;o.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);}return o;}
+function tPrevText(){
+  if(!form.isTimeUnit)return'';
+  const[sh,sm]=form.startTime.split(':').map(Number),[eh,em]=form.endTime.split(':').map(Number);
+  const mins=(eh*60+em)-(sh*60+sm);
+  if(mins<=0)return'warn:⚠️ 종료 시간이 시작 시간보다 늦어야 해요';
+  const hh=Math.floor(mins/60),mm=mins%60;
+  return`ok:⏱ ${hh?hh+'시간 ':''}${mm?mm+'분 ':''}= ${(mins/480).toFixed(2)}일 사용 예정`;
+}
+
+// ── 렌더 ──────────────────────────────────────────────
+function render(){
+  const root=document.getElementById('root');if(!root)return;
+  const vi=vacInfo(S.year),u=usedHours();
+  const ye=yearEntries().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const aRem=vi.annual-u.aD,sRem=vi.summer-u.sD,bRem=vi.birthday-u.bD;
+  const totRem=vi.total-u.aD-u.sD-u.bD;
+  const aPct=Math.min(100,(u.aD/vi.annual)*100);
+  const sPct=Math.min(100,(u.sD/vi.summer)*100);
+  const bPct=vi.birthday>0?Math.min(100,(u.bD/vi.birthday)*100):0;
+  const unusedFull=Math.max(0,Math.floor(aRem)),comp=unusedFull*100000;
+  const tos=timeOpts();
+  const spTypes=['본인결혼 (5일)','자녀결혼 (1일)','배우자출산 (20일)','부모/배우자사망 (5일)','자녀사망 (5일)','조부모/시부모사망 (3일)','형제자매사망 (5일)'];
+  const tpRaw=tPrevText(),tpWarn=tpRaw.startsWith('warn:'),tpText=tpRaw.replace(/^(ok|warn):/,'');
+  const bdayDate=getBdayDate(S.year),bdayMonth=isBdayMonth(S.year);
+  const vacTypes=['연차','여름휴가','생일휴가','경조사'];
+  const isEditing=!!form._editId;
+  // 날짜 분리
+  const jdP=S.joinDate?S.joinDate.split('-'):['','',''];
+  const bdP=S.birthday?S.birthday.split('-'):['','',''];
+  const ist=ui.importStatus;
+
+  root.innerHTML=`
+<div class="hd">
+  <div><div class="hd-t">🏖️ 휴가 관리</div>
+  <div class="hd-s">${S.joinDate?`${vi.nc}년차 · ${S.year}년 총 ${vi.total}일 가능`:'⚙️ 설정에서 입사일을 입력해주세요'}</div></div>
+  <div class="hd-r">
+    <div class="ynav"><button onclick="adjYear(-1)">‹</button><span>${S.year}</span><button onclick="adjYear(1)">›</button></div>
+    <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
+  </div>
+</div>
+
+${!S.joinDate?`
+<div class="setup-card">
+  <div class="si">🗓️</div><div class="st">입사일을 먼저 설정해주세요</div>
+  <div class="sd">입사일을 입력하면 근속 연차와 장기근속 보너스를 포함한<br>총 휴가 일수를 자동 계산해드려요</div>
+  <button class="btn-add" onclick="toggleSettings()" style="margin:0 auto;display:block;width:auto;padding:11px 24px;font-size:14px">⚙️ 설정하기</button>
+</div>
+`:`
+${S.birthday&&bdayMonth?`<div class="bday-banner"><div class="bday-l"><div class="bday-icon">🎂</div><div><div class="bday-title">이번 달이 생일 달이에요! 🎉</div><div class="bday-sub">${S.year}년 생일: ${dateFmt(bdayDate)} · 생일휴가 1일</div></div></div><div class="bday-chip">${u.bD>=1?'✅ 사용 완료':'🎁 미사용'}</div></div>`:''}
+<div class="infobox">
+  <div class="ir"><span class="l">입사일</span><span class="v">${S.joinDate}</span></div>
+  <div class="ir"><span class="l">근속 연차</span><span class="v">${vi.nc}년차</span></div>
+  <div class="ir"><span class="l">연차 (기본 12일 + 장기근속 ${vi.ls}일)</span><span class="v">${vi.annual}일</span></div>
+  <div class="ir"><span class="l">여름휴가</span><span class="v">${vi.summer}일</span></div>
+  <div class="ir"><span class="l">생일휴가</span><span class="v">${S.birthday?'1일':'미설정'}</span></div>
+  <div class="idiv"></div>
+  <div class="ir"><span class="l"><b>총 사용 가능 휴가</b></span><span class="v" style="color:var(--blue);font-size:15px">${vi.total}일</span></div>
+</div>
+<div class="cards">
+  <div class="card"><div class="c-lbl">총 휴가</div><div class="c-val" style="color:var(--blue)">${vi.total}<span>일</span></div><div class="c-sub">연차 ${vi.annual}일 + 여름 ${vi.summer}일${S.birthday?' + 생일 1일':''}</div></div>
+  <div class="card"><div class="c-lbl">사용한 휴가</div><div class="c-val" style="color:var(--orange)">${dFmt(u.aD+u.sD+u.bD)}</div><div class="c-sub">${h2s(u.aH+u.sH+u.bH)}</div></div>
+  <div class="card"><div class="c-lbl">남은 휴가</div><div class="c-val" style="color:${totRem<=0?'var(--red)':totRem<=3?'var(--orange)':'var(--green)'}">${totRem<=0?'없음':dFmt(totRem)}</div><div class="c-sub">${totRem<=0?'🚨 휴가 소진':h2s(Math.max(0,totRem)*WH)+' 남음'}</div></div>
+</div>
+<div class="prog-card">
+  <div class="pt">휴가 사용 현황</div>
+  <div class="pi"><div class="pr"><span class="pl"><span class="badge ba">연차</span></span><span class="pn">${h2s(u.aH)} / ${vi.annual}일</span></div><div class="pbar"><div class="pfill" style="width:${aPct}%;background:var(--blue)"></div></div><div class="prem">잔여 ${aRem<=0?'없음':h2s(Math.max(0,aRem)*WH)}${aRem<0?` <span class="over-warn">· ${h2s(-aRem*WH)} 초과!</span>`:''}</div></div>
+  <div class="pi"><div class="pr"><span class="pl"><span class="badge bs">여름휴가</span></span><span class="pn">${h2s(u.sH)} / ${vi.summer}일</span></div><div class="pbar"><div class="pfill" style="width:${sPct}%;background:var(--orange)"></div></div><div class="prem">잔여 ${sRem<=0?'없음':h2s(Math.max(0,sRem)*WH)}${sRem<0?` <span class="over-warn">· ${h2s(-sRem*WH)} 초과!</span>`:''}</div></div>
+  ${S.birthday?`<div class="pi"><div class="pr"><span class="pl"><span class="badge bb">생일휴가</span></span><span class="pn">${h2s(u.bH)} / 1일</span></div><div class="pbar"><div class="pfill" style="width:${bPct}%;background:var(--pink)"></div></div><div class="prem">${u.bD>=1?'✅ 사용 완료':'🎁 아직 사용 전'}${bdayDate?' · '+dateFmt(bdayDate):''}</div></div>`:''}
+</div>
+${S.year===2026&&unusedFull>0?`<div class="comp-card"><div class="comp-l"><div class="ct">💰 미사용 연차 보상금 예상 (2026 시범)</div><div class="cs">미사용 연차 ${unusedFull}일 × 100,000원</div></div><div class="comp-v">${comp.toLocaleString()}원</div></div>`:''}
+<div class="log-card">
+  <div class="log-hd"><span class="log-ht">휴가 기록 <span style="font-size:12px;font-weight:400;color:var(--t2)">${S.year}년 · ${ye.length}건</span></span><button class="btn-add" onclick="openForm()">+ 추가</button></div>
+  ${ye.length===0?`<div class="empty"><div class="ei">📅</div><div class="em">아직 등록된 휴가가 없어요</div><div class="es">+ 추가 버튼으로 기록해보세요</div></div>`:`
+  <table class="tbl">
+    <thead><tr><th>날짜</th><th>종류</th><th>사용량</th><th>시간대</th><th>메모</th><th></th></tr></thead>
+    <tbody>${ye.map(e=>{const pend=isPending(e);return`
+      <tr style="${pend?'opacity:.55':''}">
+        <td><div class="ld">${dateFmt(e.date)}</div></td>
+        <td><span class="badge ${e.type==='연차'?'ba':e.type==='여름휴가'?'bs':e.type==='생일휴가'?'bb':'bsp'}">${e.type}</span>${pend?` <span class="badge" style="background:#e0f2fe;color:#0369a1">예정</span>`:''}${e.specialType?`<div style="font-size:11px;color:var(--t2);margin-top:2px">${esc(e.specialType)}</div>`:''}</td>
+        <td style="font-weight:600;white-space:nowrap;${pend?'color:var(--t2)':''}">${h2s(e.hours)}</td>
+        <td style="font-size:12px;color:var(--t2);white-space:nowrap">${e.isTimeUnit&&e.startTime?`${e.startTime}~${e.endTime}`:'-'}</td>
+        <td><div class="lc" title="${esc(e.comment)}">${e.comment?esc(e.comment):'<span style="color:var(--t3)">-</span>'}</div></td>
+        <td><div class="row-btns"><button class="edit-btn" onclick="editEntry('${e.id}')">✏️</button><button class="del-btn" onclick="delEntry('${e.id}')">✕</button></div></td>
+      </tr>`;}).join('')}</tbody>
+  </table>`}
+</div>
+<div class="notice">⚠️ 미사용 연차·여름휴가·생일휴가는 해당 연도 말 자동 소멸됩니다.</div>
+`}
+
+${ui.showSettings?`
+<div class="ovl" onclick="if(event.target===this)toggleSettings()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhd"><span class="mht">⚙️ 설정</span><button class="close-btn" onclick="toggleSettings()">✕</button></div>
+    <div class="mbody">
+      <div class="fg">
+        <label>입사일</label>
+        <div class="date-row">
+          <input type="text" inputmode="numeric" id="jd_y" class="fc" style="width:76px" maxlength="4" placeholder="YYYY" value="${jdP[0]}">
+          <span class="date-sep">-</span>
+          <input type="text" inputmode="numeric" id="jd_m" class="fc" style="width:54px" maxlength="2" placeholder="MM" value="${jdP[1]?String(jdP[1]).padStart(2,'0'):''}">
+          <span class="date-sep">-</span>
+          <input type="text" inputmode="numeric" id="jd_d" class="fc" style="width:54px" maxlength="2" placeholder="DD" value="${jdP[2]?String(jdP[2]).padStart(2,'0'):''}">
+        </div>
+      </div>
+      <div class="fg">
+        <label>생년월일 🎂 <span style="font-size:10px;color:var(--t3)">(생일휴가 적용)</span></label>
+        <div class="date-row">
+          <input type="text" inputmode="numeric" id="bd_y" class="fc" style="width:76px" maxlength="4" placeholder="YYYY" value="${bdP[0]}">
+          <span class="date-sep">-</span>
+          <input type="text" inputmode="numeric" id="bd_m" class="fc" style="width:54px" maxlength="2" placeholder="MM" value="${bdP[1]?String(bdP[1]).padStart(2,'0'):''}">
+          <span class="date-sep">-</span>
+          <input type="text" inputmode="numeric" id="bd_d" class="fc" style="width:54px" maxlength="2" placeholder="DD" value="${bdP[2]?String(bdP[2]).padStart(2,'0'):''}">
+        </div>
+        <div class="snote">입력하면 매년 생일휴가 1일이 자동 추가돼요</div>
+      </div>
+      <div class="fg">
+        <label>데이터 관리</label>
+        <button class="data-btn" id="btn_tpl" style="border:1.5px solid var(--border);background:#f9fafb">📋 엑셀 양식 다운로드</button>
+        <label for="xlsx_inp" class="data-btn" style="display:block;border:1.5px solid var(--blue);background:${ist.loading?'#bfdbfe':'var(--blue-l)'};color:var(--blue);font-weight:700;cursor:pointer">${ist.loading?'⏳ 처리 중...':'📥 엑셀로 가져오기 (.xlsx)'}</label>
+        <input type="file" id="xlsx_inp" accept=".xlsx,.xls" style="position:absolute;width:1px;height:1px;opacity:0">
+        ${ist.msg?`<div class="import-status" style="background:${ist.error?'#fef2f2':'#ecfdf5'};color:${ist.error?'var(--red)':'#065f46'}">${ist.msg}</div>`:''}
+        <button class="data-btn" id="btn_exp" style="border:1.5px solid var(--border);background:#f9fafb">📤 엑셀로 내보내기 (백업)</button>
+      </div>
+      <div class="fact">
+        <button class="btn-cancel" onclick="toggleSettings()">취소</button>
+        <button class="btn-submit" id="btn_save">저장</button>
+      </div>
+    </div>
+  </div>
+</div>`:''}
+
+${ui.showForm?`
+<div class="ovl" onclick="if(event.target===this)closeForm()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhd"><span class="mht">${isEditing?'✏️ 휴가 수정':'휴가 추가'}</span><button class="close-btn" onclick="closeForm()">✕</button></div>
+    <div class="mbody">
+      <div class="fg"><label>휴가 종류</label><div class="rgrp">${vacTypes.map(t=>`<div class="ropt ${form.type===t?'on':''}" onclick="setF('type','${t}')">${t}</div>`).join('')}</div>${form.type==='생일휴가'&&!S.birthday?`<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 설정에서 생년월일을 먼저 입력해주세요</div>`:''}</div>
+      ${form.type==='경조사'?`<div class="fg"><label>경조사 사유</label><select class="fc" id="sp_s"><option value="">선택하세요</option>${spTypes.map(s=>`<option value="${esc(s)}" ${form.specialType===s?'selected':''}>${s}</option>`).join('')}</select></div>`:''}
+      <div class="fg"><label>상태</label><div class="rgrp"><div class="ropt ${form.status==='완료'?'on':''}" onclick="setF('status','완료')">✅ 완료</div><div class="ropt ${form.status==='예정'?'on':''}" onclick="setF('status','예정')">📅 예정</div></div>${form.status==='예정'?`<div style="font-size:12px;color:var(--blue);margin-top:6px">날짜가 지나면 자동으로 사용 휴가에 반영돼요</div>`:''}</div>
+      <div class="fg"><label>사용 방식</label><div class="rgrp"><div class="ropt ${!form.isTimeUnit?'on':''}" onclick="setF('isTimeUnit',false)">📅 일 단위</div><div class="ropt ${form.isTimeUnit?'on':''}" onclick="setF('isTimeUnit',true)">⏰ 시간 단위 (30분)</div></div></div>
+      <div class="fg"><label>날짜</label><input type="date" class="fc" id="dt_i" value="${esc(form.date)}"></div>
+      ${!form.isTimeUnit?`<div class="fg"><label>일수</label><input type="number" class="fc" id="dy_i" value="${form.days}" min="0.5" max="30" step="0.5"></div>`:`
+      <div class="fg"><div class="frow"><div><label>시작 시간</label><select class="fc" id="st_i">${tos.slice(0,-1).map(t=>`<option value="${t}" ${form.startTime===t?'selected':''}>${t}</option>`).join('')}</select></div><div><label>종료 시간</label><select class="fc" id="et_i">${tos.slice(1).map(t=>`<option value="${t}" ${form.endTime===t?'selected':''}>${t}</option>`).join('')}</select></div></div><div class="tprev ${tpWarn?'warn':''}" id="tp">${tpText}</div></div>`}
+      <div class="fg"><label>메모 (선택)</label><textarea class="fc" id="cm_i" placeholder="예: 병원 방문, 여행, 생일 기념...">${esc(form.comment)}</textarea></div>
+      <div class="fact"><button class="btn-cancel" onclick="closeForm()">취소</button><button class="btn-submit" id="btn_form_submit">${isEditing?'수정하기':'추가하기'}</button></div>
+    </div>
+  </div>
+</div>`:''}
+`;
+
+  // ── 이벤트 연결 ──────────────────────────────────────
+  // 날짜 자동 이동 (설정)
+  if(ui.showSettings){
+    const attach=(yId,mId,dId)=>{
+      const y=document.getElementById(yId),m=document.getElementById(mId),d=document.getElementById(dId);
+      if(y)y.addEventListener('input',()=>{y.value=y.value.replace(/\D/g,'').slice(0,4);if(y.value.length===4&&m)m.focus();});
+      if(m)m.addEventListener('input',()=>{m.value=m.value.replace(/\D/g,'').slice(0,2);if(m.value.length===2&&d)d.focus();});
+      if(d)d.addEventListener('input',()=>{d.value=d.value.replace(/\D/g,'').slice(0,2);});
+    };
+    attach('jd_y','jd_m','jd_d');
+    attach('bd_y','bd_m','bd_d');
+
+    // 설정 저장
+    const btnSave=document.getElementById('btn_save');
+    if(btnSave)btnSave.onclick=function(){
+      const getDate=(y,m,d)=>{const yv=(document.getElementById(y)||{}).value||'',mv=(document.getElementById(m)||{}).value||'',dv=(document.getElementById(d)||{}).value||'';return(yv&&mv&&dv)?`${yv}-${mv.padStart(2,'0')}-${dv.padStart(2,'0')}`:''};
+      S.joinDate=getDate('jd_y','jd_m','jd_d');
+      S.birthday=getDate('bd_y','bd_m','bd_d');
+      saveS();ui.showSettings=false;render();
+    };
+
+    // 엑셀 양식 다운로드
+    const btnTpl=document.getElementById('btn_tpl');
+    if(btnTpl)btnTpl.onclick=function(){
+      if(!window.XLSX){alert('XLSX 라이브러리 로드 중입니다. 잠시 후 다시 시도해주세요.');return;}
+      const rows=[['날짜','종류','사용시간(h)','시작시간','종료시간','메모','상태'],['2026-01-09','연차',5,'10:00','15:00','병원 방문','완료'],['2026-02-09','연차',8,'','','','완료'],['2026-05-01','여름휴가',8,'','','제주도 여행','예정'],['','※ 종류: 연차 / 여름휴가 / 생일휴가 / 경조사','','','','',''],['','※ 시간단위: 시작·종료시간 입력 (사용시간 자동계산)','','','','',''],['','※ 종일: 사용시간만 입력 (1일=8시간)','','','','','']];
+      const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols']=[{wch:13},{wch:10},{wch:14},{wch:10},{wch:10},{wch:22},{wch:8}];
+      XLSX.utils.book_append_sheet(wb,ws,'휴가기록');
+      XLSX.writeFile(wb,'휴가기록_양식.xlsx');
+    };
+
+    // 엑셀 내보내기
+    const btnExp=document.getElementById('btn_exp');
+    if(btnExp)btnExp.onclick=function(){
+      if(!window.XLSX){alert('XLSX 라이브러리 로드 중입니다. 잠시 후 다시 시도해주세요.');return;}
+      const hdrs=['날짜','종류','사용시간(h)','시작시간','종료시간','메모','상태'];
+      const rows=entries.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(e=>[e.date,e.type,e.hours,e.startTime||'',e.endTime||'',e.comment||'',e.status||'완료']);
+      const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([hdrs,...rows]);
+      ws['!cols']=[{wch:13},{wch:10},{wch:14},{wch:10},{wch:10},{wch:24},{wch:8}];
+      XLSX.utils.book_append_sheet(wb,ws,'휴가기록');
+      XLSX.writeFile(wb,`휴가기록_백업_${new Date().toISOString().slice(0,10)}.xlsx`);
+    };
+
+    // 엑셀 가져오기
+    const xlsxInp=document.getElementById('xlsx_inp');
+    if(xlsxInp){
+      xlsxInp.onchange=function(){
+        const file=this.files[0];if(!file)return;
+        this.value='';
+        if(!window.XLSX){ui.importStatus={loading:false,msg:'❌ XLSX 라이브러리가 로드되지 않았어요.',error:true};render();return;}
+        ui.importStatus={loading:true,msg:'⏳ 파일을 읽는 중...',error:false};render();
+        function toDate(v){
+          if(!v&&v!==0)return null;
+          if(typeof v==='number'&&v>1){const d=new Date(Math.round((v-25569)*864e5));return`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;}
+          if(v instanceof Date)return v.toISOString().slice(0,10);
+          const m=String(v).trim().match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+          return m?`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`:null;
+        }
+        function toTime(v){
+          if(!v&&v!==0)return null;
+          if(typeof v==='number'&&v>=0&&v<1){const mins=Math.round(v*1440);return`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;}
+          const s=String(v).trim();return/^\d{1,2}:\d{2}$/.test(s)?(s.length===4?'0'+s:s):null;
+        }
+        const reader=new FileReader();
+        reader.onload=function(evt){
+          try{
+            const wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array'});
+            const ws=wb.Sheets[wb.SheetNames[0]];
+            const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+            const valid=['연차','여름휴가','생일휴가','경조사'],newE=[];
+            for(let i=1;i<rows.length;i++){
+              const row=rows[i];
+              if(!row||row.every(c=>c===null||c===''))continue;
+              const ds=toDate(row[0]),type=String(row[1]||'').trim();
+              if(!ds||!valid.includes(type))continue;
+              let hours=0,isTimeUnit=false,st=null,et=null;
+              const sT=toTime(row[3]),eT=toTime(row[4]);
+              if(sT&&eT){const[sh,sm]=sT.split(':').map(Number),[eh,em]=eT.split(':').map(Number),mins=(eh*60+em)-(sh*60+sm);if(mins>0){hours=Math.round(mins/30)*0.5;isTimeUnit=true;st=sT;et=eT;}}
+              if(!hours){const hv=row[2];hours=typeof hv==='number'?hv:parseFloat(String(hv||'').replace(/[^\d.]/g,''))||0;}
+              if(hours<=0)continue;
+              const sr=String(row[6]||'').trim();
+              newE.push({id:uid(),date:ds,hours,type,specialType:'',isTimeUnit,startTime:st,endTime:et,comment:String(row[5]||'').trim(),status:['완료','예정'].includes(sr)?sr:'완료',source:'excel'});
+            }
+            if(!newE.length){ui.importStatus={loading:false,msg:'⚠️ 가져올 데이터가 없어요. 날짜·종류를 확인해주세요.',error:true};render();return;}
+            const existing=new Set(entries.map(e=>`${e.date}_${e.type}_${e.hours}`));
+            const filtered=newE.filter(e=>!existing.has(`${e.date}_${e.type}_${e.hours}`));
+            entries=[...entries,...filtered];saveE();
+            const dup=newE.length-filtered.length;
+            ui.importStatus={loading:false,msg:`✅ ${filtered.length}개 가져오기 완료!${dup>0?' (중복 '+dup+'개 제외)':''}`,error:false};render();
+            setTimeout(()=>{ui.showSettings=false;ui.importStatus={loading:false,msg:'',error:false};render();},2000);
+          }catch(err){console.error(err);ui.importStatus={loading:false,msg:'❌ 오류: '+err.message,error:true};render();}
+        };
+        reader.onerror=function(){ui.importStatus={loading:false,msg:'❌ 파일을 읽을 수 없어요',error:true};render();};
+        reader.readAsArrayBuffer(file);
+      };
+    }
+  }
+
+  // 휴가 폼 이벤트
+  if(ui.showForm){
+    const si=document.getElementById('st_i'),ei=document.getElementById('et_i');
+    if(si)si.addEventListener('change',e=>{form.startTime=e.target.value;updTP();});
+    if(ei)ei.addEventListener('change',e=>{form.endTime=e.target.value;updTP();});
+    const btnFS=document.getElementById('btn_form_submit');
+    if(btnFS)btnFS.onclick=submitForm;
+  }
+}
+
+// ── 핸들러 ──────────────────────────────────────────────
+function updTP(){const tp=document.getElementById('tp');if(!tp)return;const raw=tPrevText(),warn=raw.startsWith('warn:'),txt=raw.replace(/^(ok|warn):/,'');tp.className='tprev'+(warn?' warn':'');tp.innerHTML=txt;}
+function adjYear(d){S.year+=d;render();}
+function toggleSettings(){ui.showSettings=!ui.showSettings;if(!ui.showSettings)ui.importStatus={loading:false,msg:'',error:false};render();}
+function openForm(){
+  const today=new Date().toISOString().slice(0,10);
+  form={date:today,isTimeUnit:false,type:'연차',specialType:'',startTime:'10:00',endTime:'19:00',days:'1',comment:'',status:'완료',_editId:null};
+  ui.showForm=true;render();
+}
+function editEntry(id){
+  const e=entries.find(x=>x.id===id);if(!e)return;
+  form={_editId:e.id,date:e.date,isTimeUnit:e.isTimeUnit,type:e.type,specialType:e.specialType||'',startTime:e.startTime||'10:00',endTime:e.endTime||'19:00',days:String(e.hours/WH),comment:e.comment||'',status:e.status||'완료'};
+  ui.showForm=true;render();
+}
+function closeForm(){ui.showForm=false;form={};render();}
+function syncForm(){
+  const m={dt_i:'date',dy_i:'days',cm_i:'comment',sp_s:'specialType'};
+  Object.entries(m).forEach(([id,k])=>{const el=document.getElementById(id);if(el)form[k]=el.value;});
+}
+function setF(k,v){syncForm();form[k]=v;render();}
+function submitForm(){
+  syncForm();
+  if(!form.date){alert('날짜를 선택해주세요.');return;}
+  let hours;
+  if(form.isTimeUnit){
+    const si=document.getElementById('st_i'),ei=document.getElementById('et_i');
+    if(si)form.startTime=si.value;if(ei)form.endTime=ei.value;
+    const[sh,sm]=form.startTime.split(':').map(Number),[eh,em]=form.endTime.split(':').map(Number);
+    const mins=(eh*60+em)-(sh*60+sm);if(mins<=0){alert('종료 시간이 시작 시간보다 늦어야 해요.');return;}
+    hours=Math.round(mins/30)*0.5;
+  }else{
+    const d=parseFloat(form.days);if(!d||d<=0){alert('올바른 일수를 입력해주세요.');return;}
+    hours=d*WH;
+  }
+  const payload={date:form.date,hours,type:form.type,specialType:form.type==='경조사'?form.specialType:'',isTimeUnit:form.isTimeUnit,startTime:form.isTimeUnit?form.startTime:null,endTime:form.isTimeUnit?form.endTime:null,comment:form.comment,status:form.status||'완료',source:'manual'};
+  if(form._editId){const idx=entries.findIndex(e=>e.id===form._editId);if(idx>=0)entries[idx]={...entries[idx],...payload};}
+  else entries.push({id:uid(),...payload});
+  saveE();ui.showForm=false;form={};render();
+}
+function delEntry(id){entries=entries.filter(e=>e.id!==id);saveE();render();}
+
+load();
+</script>
+</body>
+</html>
