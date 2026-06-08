@@ -113,6 +113,8 @@ textarea.fc{resize:vertical;min-height:60px}
 .over-warn{font-size:11px;color:var(--red);font-weight:500}
 .data-btn{width:100%;padding:11px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;text-align:left;margin-bottom:6px}
 .import-status{padding:10px 12px;border-radius:var(--rs);font-size:13px;font-weight:600;margin-bottom:6px}
+.mobile-memo{display:none;font-size:11px;color:var(--t2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mobile-hint{display:none;font-size:11px;color:var(--t3);padding:10px 14px;border-top:1px solid var(--border);text-align:center}
 @media(max-width:500px){
   .cards{grid-template-columns:repeat(3,1fr)}
   .card{padding:12px 10px}
@@ -120,16 +122,17 @@ textarea.fc{resize:vertical;min-height:60px}
   .c-sub{font-size:10px}
   .c-lbl{font-size:10px}
   .frow{grid-template-columns:1fr}
-  /* 현황판 줄바꿈 방지 */
   .pr{flex-wrap:nowrap;align-items:center}
   .pn{white-space:nowrap;flex-shrink:0;font-size:11px}
   .pl{font-size:12px}
-  /* 테이블: 시간대·메모 컬럼 숨김 */
   .tbl th:nth-child(4),.tbl td:nth-child(4){display:none}
   .tbl th:nth-child(5),.tbl td:nth-child(5){display:none}
   .tbl td,.tbl th{padding:8px 8px;font-size:12px}
   .ld{font-size:12px}
-  .edit-btn,.del-btn{padding:3px 5px;font-size:12px}
+  .edit-btn{display:none}
+  .del-btn{padding:3px 5px;font-size:12px}
+  .mobile-memo{display:block}
+  .mobile-hint{display:block}
 }
 @media(max-width:360px){
   .cards{grid-template-columns:repeat(2,1fr)}
