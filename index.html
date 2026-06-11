@@ -53,14 +53,10 @@
     .bs{background:#fef3c7;color:#92400e}
     .bsp{background:#f3e8ff;color:#6b21a8}
     .bb{background:#fce7f3;color:#9d174d}
-    
-    /* 보상금 카드 기본 스타일 (데스크톱/패드용 세팅) */
-    .comp-card{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:var(--r);padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .comp-l{flex:1;min-width:0}
+    .comp-card{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:var(--r);padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
     .comp-l .ct{font-size:13px;font-weight:700;color:#78350f;margin-bottom:2px}
     .comp-l .cs{font-size:11px;color:#92400e}
-    .comp-v{font-size:22px;font-weight:800;color:#92400e;white-space:nowrap;flex-shrink:0} /* 글자 줄바꿈 및 압축 방지 */
-
+    .comp-v{font-size:22px;font-weight:800;color:#92400e}
     .log-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
     .log-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
     .log-ht{font-size:14px;font-weight:700}
@@ -126,12 +122,7 @@
     .import-status{padding:10px 12px;border-radius:var(--rs);font-size:13px;font-weight:600;margin-bottom:6px}
     .mobile-memo{display:none;font-size:11px;color:var(--t2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .mobile-hint{display:none;font-size:11px;color:var(--t3);padding:10px 14px;border-top:1px solid var(--border);text-align:center}
-    
     @media(max-width:500px){
-      /* 보상금 카드 모바일 반응형 디자인 개선 */
-      .comp-card{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px}
-      .comp-v{text-align:right;font-size:20px;margin-top:2px}
-
       .cards{grid-template-columns:repeat(3,1fr)}
       .card{padding:12px 10px}
       .c-val{font-size:20px}
@@ -166,7 +157,7 @@
   <div class="wrap" id="root"></div>
 
   <script>
-    // ── PWA ──────────────────────────────────────────────
+    /* ── PWA ── */
     (function(){
       const m={name:'🏖️ 휴가 관리',short_name:'휴가관리',start_url:'./index.html',display:'standalone',background_color:'#f4f5f7',theme_color:'#3b82f6',icons:[{src:`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%233b82f6'/><text y='78' x='12' font-size='72'>🏖️</text></svg>`,sizes:'512x512',type:'image/svg+xml'}]};
       try{const b=new Blob([JSON.stringify(m)],{type:'application/json'});const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);document.head.appendChild(l);}catch(e){}
@@ -179,24 +170,23 @@
       }
     })();
 
-    // ── 상태 ──────────────────────────────────────────────
+    /* ── 상태 ── */
     const WH=8;
     let S={joinDate:'',birthday:'',year:new Date().getFullYear()};
     let entries=[];
     let ui={showForm:false,showSettings:false,importStatus:{loading:false,msg:'',error:false}};
     let form={};
 
-    // ── 저장 ──────────────────────────────────────────────
+    /* ── 저장 ── */
     function saveS(){try{localStorage.setItem('hvac_s',JSON.stringify(S));}catch(e){}}
     function saveE(){try{localStorage.setItem('hvac_e',JSON.stringify(entries));}catch(e){}}
-    
     function load(){
       try{const r=localStorage.getItem('hvac_s');if(r)Object.assign(S,JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem('hvac_e');if(r)entries=JSON.parse(r);}catch(e){}
       render();
     }
 
-    // ── 계산 ──────────────────────────────────────────────
+    /* ── 계산 ── */
     function nyuncha(yr){
       if(!S.joinDate)return 1;
       const j=new Date(S.joinDate);
@@ -232,11 +222,7 @@
       return{nc,ls,annual,summer:3,birthday:bday,total:annual+3+bday,isProRated:false,isBeforeJoin:false};
     }
     
-    function getBdayDate(yr){
-      if(!S.birthday)return null;
-      const[,mm,dd]=S.birthday.split('-');
-      return`${yr}-${mm}-${dd}`;
-    }
+    function getBdayDate(yr){if(!S.birthday)return null;const[,mm,dd]=S.birthday.split('-');return`${yr}-${mm}-${dd}`;}
     
     function isBdayMonth(yr){
       if(!S.birthday)return false;
@@ -244,10 +230,30 @@
       return today.getFullYear()===yr&&today.getMonth()===m;
     }
     
-    function yearEntries(){
-      return entries.filter(e=>new Date(e.date).getFullYear()===S.year);
-    }
+    function yearEntries(){return entries.filter(e=>new Date(e.date).getFullYear()===S.year);}
     
+    /* ── 점심시간 차감 반영 시간 계산기 ── */
+    function calcTimeUnitHours(st, et) {
+      if (!st || !et) return 0;
+      const [sh, sm] = st.split(':').map(Number);
+      const [eh, em] = et.split(':').map(Number);
+      const startMins = sh * 60 + sm;
+      const endMins = eh * 60 + em;
+      const totalMins = endMins - startMins;
+      if (totalMins <= 0) return 0;
+      
+      /* 점심시간 (12:00 ~ 13:00) 중첩 분 계산 */
+      const lunchStart = 12 * 60;
+      const lunchEnd = 13 * 60;
+      const overlapStart = Math.max(startMins, lunchStart);
+      const overlapEnd = Math.min(endMins, lunchEnd);
+      const overlap = Math.max(0, overlapEnd - overlapStart);
+      
+      const actualMins = totalMins - overlap;
+      const hours = Math.round(actualMins / 30) * 0.5;
+      return Math.min(WH, hours); /* 하루 최대 8시간 제한 */
+    }
+
     function isCounted(e){
       if(!e.status||e.status==='완료')return true;
       const t=new Date();
@@ -255,22 +261,18 @@
       return new Date(e.date)<=t;
     }
     
-    function isPending(e){
-      return e.status==='예정'&&!isCounted(e);
-    }
+    function isPending(e){return e.status==='예정'&&!isCounted(e);}
     
     function usedHours(){
       let a=0,s=0,b=0;
       yearEntries().forEach(e=>{
         if(!isCounted(e))return;
-        if(e.type==='연차')a+=e.hours;
-        else if(e.type==='여름휴가')s+=e.hours;
-        else if(e.type==='생일휴가')b+=e.hours;
+        if(e.type==='연차')a+=e.hours;else if(e.type==='여름휴가')s+=e.hours;else if(e.type==='생일휴가')b+=e.hours;
       });
       return{aH:a,sH:s,bH:b,aD:a/WH,sD:s/WH,bD:b/WH};
     }
 
-    // ── 헬퍼 ──────────────────────────────────────────────
+    /* ── 헬퍼 ── */
     function h2s(h){
       if(!h||h<=0)return'0시간';
       const d=Math.floor(h/WH),rh=h%WH,rm=Math.round((rh*60)%60);
@@ -278,23 +280,13 @@
       return s||'0시간';
     }
     
-    function dFmt(n){
-      if(n<=0)return'0일';
-      return(n%1===0)?n+'일':n.toFixed(1)+'일';
-    }
+    function dFmt(n){if(n<=0)return'0일';return(n%1===0)?n+'일':n.toFixed(1)+'일';}
     
-    function dateFmt(ds){
-      const d=new Date(ds);
-      return`${d.getMonth()+1}/${d.getDate()}(${['일','월','화','수','목','금','토'][d.getDay()]})`;
-    }
+    function dateFmt(ds){const d=new Date(ds);return`${d.getMonth()+1}/${d.getDate()}(${['일','월','화','수','목','금','토'][d.getDay()]})`;}
     
-    function uid(){
-      return Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    }
+    function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
     
-    function esc(s){
-      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+    function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
     
     function timeOpts(){
       const o=[];
@@ -303,15 +295,26 @@
     }
     
     function tPrevText(){
-      if(!form.isTimeUnit)return'';
-      const[sh,sm]=form.startTime.split(':').map(Number),[eh,em]=form.endTime.split(':').map(Number);
+      if(!form.isTimeUnit)return '';
+      const si=document.getElementById('st_i'),ei=document.getElementById('et_i');
+      const st=si?si.value:form.startTime;
+      const et=ei?ei.value:form.endTime;
+      const[sh,sm]=st.split(':').map(Number),[eh,em]=et.split(':').map(Number);
       const mins=(eh*60+em)-(sh*60+sm);
       if(mins<=0)return'warn:⚠️ 종료 시간이 시작 시간보다 늦어야 해요';
-      const hh=Math.floor(mins/60),mm=mins%60;
-      return`ok:⏱ ${hh?hh+'시간 ':''}${mm?mm+'분 ':''}= ${(mins/480).toFixed(2)}일 사용 예정`;
+      
+      const hours = calcTimeUnitHours(st, et);
+      const hh = Math.floor(hours);
+      const mm = Math.round((hours - hh) * 60);
+      const timeStr = `${hh ? hh + '시간 ' : ''}${mm ? mm + '분 ' : ''}`.trim() || '0시간';
+      
+      const overlap = Math.max(0, Math.min(eh*60+em, 13*60) - Math.max(sh*60+sm, 12*60));
+      const lunchNotice = overlap > 0 ? ` (점심 ${overlap}분 차감)` : '';
+      
+      return`ok:⏱ ${timeStr} = ${(hours/WH).toFixed(2)}일 사용 예정${lunchNotice}`;
     }
 
-    // ── 렌더 ──────────────────────────────────────────────
+    /* ── 렌더 ── */
     function render(){
       const root=document.getElementById('root');if(!root)return;
       const vi=vacInfo(S.year),u=usedHours();
@@ -368,7 +371,7 @@
       <div class="log-hd"><span class="log-ht">휴가 기록 <span style="font-size:12px;font-weight:400;color:var(--t2)">${S.year}년 · ${ye.length}건</span></span><button class="btn-add" onclick="openForm()">+ 추가</button></div>
       ${ye.length===0?`<div class="empty"><div class="ei">📅</div><div class="em">아직 등록된 휴가가 없어요</div><div class="es">+ 추가 버튼으로 기록해보세요</div></div>`:`  <table class="tbl">
         <thead><tr><th>날짜</th><th>종류</th><th>사용량</th><th>시간대</th><th>메모</th><th></th></tr></thead>
-        <tbody>${ye.map(e=>{const pend=isPending(e);return`       <tr style="${pend?'opacity:.55':''}">
+        <tbody>${ye.map(e=>{const pend=isPending(e);return`      <tr style="${pend?'opacity:.55':''}">
             <td onclick="editEntry('${e.id}')" style="cursor:pointer">
               <div class="ld">${dateFmt(e.date)}</div>
               ${e.comment?`<div class="mobile-memo">${esc(e.comment)}</div>`:''}
@@ -378,7 +381,7 @@
             <td style="font-size:12px;color:var(--t2);white-space:nowrap">${e.isTimeUnit&&e.startTime?`${e.startTime}~${e.endTime}`:'-'}</td>
             <td><div class="lc" title="${esc(e.comment)}">${e.comment?esc(e.comment):'<span style="color:var(--t3)">-</span>'}</div></td>
             <td><div class="row-btns"><button class="edit-btn" onclick="editEntry('${e.id}')">✏️</button><button class="del-btn" onclick="delEntry('${e.id}')">✕</button></div></td>
-          </tr>`;}).join('')}     </tbody>
+          </tr>`;}).join('')}    </tbody>
       </table>
       <div class="mobile-hint">💡 날짜를 탭하면 수정할 수 있어요</div>`}</div><div class="notice">⚠️ 미사용 연차·여름휴가·생일휴가는 해당 연도 말 자동 소멸됩니다.</div>`}${ui.showSettings?`<div class="ovl" onclick="if(event.target===this)toggleSettings()">
       <div class="modal" onclick="event.stopPropagation()">
@@ -433,7 +436,7 @@
         </div>
       </div></div>`:''}`;
 
-      // ── 이벤트 연결 ──────────────────────────────────────
+      /* ── 이벤트 연결 ────────────────────────────────────── */
       if(ui.showSettings){
         const attach=(yId,mId,dId)=>{
           const y=document.getElementById(yId),m=document.getElementById(mId),d=document.getElementById(dId);
@@ -443,7 +446,7 @@
         };
         attach('jd_y','jd_m','jd_d');
         attach('bd_y','bd_m','bd_d');
-        
+
         const btnSave=document.getElementById('btn_save');
         if(btnSave)btnSave.onclick=function(){
           const getDate=(y,m,d)=>{const yv=(document.getElementById(y)||{}).value||'',mv=(document.getElementById(m)||{}).value||'',dv=(document.getElementById(d)||{}).value||'';return(yv&&mv&&dv)?`${yv}-${mv.padStart(2,'0')}-${dv.padStart(2,'0')}`:''};
@@ -451,7 +454,7 @@
           S.birthday=getDate('bd_y','bd_m','bd_d');
           saveS();ui.showSettings=false;render();
         };
-        
+
         const btnTpl=document.getElementById('btn_tpl');
         if(btnTpl)btnTpl.onclick=function(){
           if(!window.XLSX){alert('XLSX 라이브러리 로드 중입니다. 잠시 후 다시 시도해주세요.');return;}
@@ -461,7 +464,7 @@
           XLSX.utils.book_append_sheet(wb,ws,'휴가기록');
           XLSX.writeFile(wb,'휴가기록_양식.xlsx');
         };
-        
+
         const btnExp=document.getElementById('btn_exp');
         if(btnExp)btnExp.onclick=function(){
           if(!window.XLSX){alert('XLSX 라이브러리 로드 중입니다. 잠시 후 다시 시도해주세요.');return;}
@@ -472,7 +475,7 @@
           XLSX.utils.book_append_sheet(wb,ws,'휴가기록');
           XLSX.writeFile(wb,`휴가기록_백업_${new Date().toISOString().slice(0,10)}.xlsx`);
         };
-        
+
         const xlsxInp=document.getElementById('xlsx_inp');
         if(xlsxInp){
           xlsxInp.onchange=function(){
@@ -536,7 +539,7 @@
       }
     }
 
-    // ── 핸들러 ──────────────────────────────────────────────
+    /* ── 핸들러 ── */
     function updTP(){
       const tp=document.getElementById('tp');if(!tp)return;
       const raw=tPrevText(),warn=raw.startsWith('warn:'),txt=raw.replace(/^(ok|warn):/,'');
@@ -576,7 +579,7 @@
         if(si)form.startTime=si.value;if(ei)form.endTime=ei.value;
         const[sh,sm]=form.startTime.split(':').map(Number),[eh,em]=form.endTime.split(':').map(Number);
         const mins=(eh*60+em)-(sh*60+sm);if(mins<=0){alert('종료 시간이 시작 시간보다 늦어야 해요.');return;}
-        hours=Math.round(mins/30)*0.5;
+        hours = calcTimeUnitHours(form.startTime, form.endTime);
       }else{
         const d=parseFloat(form.days);if(!d||d<=0){alert('올바른 일수를 입력해주세요.');return;}
         hours=d*WH;
